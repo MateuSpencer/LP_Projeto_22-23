@@ -18,17 +18,17 @@ separaPeriodos(Periodos, List) :-
     ).
 
 eventosSemSala(Eventos) :-
-    findall(E,evento(E, _, _, _, semSala),Eventos).
-    %ordenar?
+    findall(E,evento(E, _, _, _, semSala),Eventos1),
+    sort(Eventos1,Eventos).
 
 
 eventosSemSalasDiaSemana(Dia, Eventos):-
-    findall(E,(evento(E, _, _, _, semSala), horario(E, Dia, _, _, _, _)),Eventos).
-%ordenar?
+    findall(E,(evento(E, _, _, _, semSala), horario(E, Dia, _, _, _, _)),Eventos1),
+    sort(Eventos1,Eventos).
 
 eventosSemSalasPeriodo(Periodos, Eventos):-
-    findall(E,(evento(E, _, _, _, semSala), horario(E, _, _, _, _, Periodo), separaPeriodos(Periodo,Periodos)),Eventos).
-    %ordenar?
+    findall(E,(evento(E, _, _, _, semSala), horario(E, _, _, _, _, Periodo), separaPeriodos(Periodo,Periodos)),Eventos1),
+    sort(Eventos1,Eventos).
 
 %organizaEventos/3
 %eventosMenoresQue/2
