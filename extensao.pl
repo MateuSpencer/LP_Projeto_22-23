@@ -2,14 +2,33 @@
 :- set_prolog_flag(answer_write_options,[max_depth(0)]). % para listas completas
 :- consult('dados.pl'), consult('keywords.pl'). % ficheiros a importar.
 
+separaPeriodos(Periodos, List) :-
+    (   sub_atom(Periodos, _, _, _, '_') 
+    ->
+        (   sub_atom(Periodos, _, _, _, '1') 
+        ->
+            (member(p1,List);
+            member(p2,List)
+            );
+            (member(p3,List);
+            member(p4,List)
+            )
+        );
+        member(Periodos, List)
+    ).
+
 eventosSemSala(Eventos) :-
     findall(E,evento(E, _, _, _, semSala),Eventos).
+    %ordenar?
 
 
 eventosSemSalasDiaSemana(Dia, Eventos):-
     findall(E,(evento(E, _, _, _, semSala), horario(E, Dia, _, _, _, _)),Eventos).
+%ordenar?
 
-%eventosSemSalasPeriodo/2
+eventosSemSalasPeriodo(Periodos, Eventos):-
+    findall(E,(evento(E, _, _, _, semSala), horario(E, _, _, _, _, Periodo), separaPeriodos(Periodo,Periodos)),Eventos).
+    %ordenar?
 
 %organizaEventos/3
 %eventosMenoresQue/2
