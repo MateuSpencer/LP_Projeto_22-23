@@ -80,9 +80,71 @@ organizaDisciplinas([Disciplina|T], Curso, [Semestre1,Semestre2]):-
         Semestre1 = Semestre1_Rec
         )
     ).
-%horasCurso/5
-%evolucaoHorasCurso/2
 
-%5(...)
+confirma_curso_ano(ID, Curso, Ano):-
+    turno(ID, Curso,Ano,_),!.
+horasCurso(Periodo, Curso, Ano, TotalHoras):-
+        findall(Dur ,(horario(ID, _, _, _, Dur, Periodo_aux),testa_periodos(Periodo_aux, [Periodo]), confirma_curso_ano(ID, Curso, Ano)), Duracoes),
+        sum_list(Duracoes, TotalHoras).
 
-%Mesa de Jantar
+    evolucaoHorasCurso(Curso, Evolucao):-
+        findall((Ano,Periodo,TotalHoras), (
+            turno(_, Curso, Ano, _),
+            fixa_periodo(Periodo),
+            horasCurso(Periodo, Curso, Ano, TotalHoras)), 
+        Evolucao_aux),
+    sort(Evolucao_aux,Evolucao).
+
+ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, _):-
+    (HoraFimEvento =< HoraInicioDada;
+    HoraFimDada =< HoraInicioEvento
+    ), !, fail.   
+ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, Horas):-
+    HoraInicioEvento >= HoraInicioDada
+    ->
+        (
+            HoraFimEvento =< HoraFimDada
+            ->
+                Horas is HoraFimEvento - HoraInicioEvento
+            ; Horas is HoraFimDada - HoraInicioEvento
+        )
+    ; 
+        (
+            HoraFimEvento =< HoraFimDada
+            ->
+                Horas is HoraFimEvento - HoraInicioDada
+            ; Horas is HoraFimDada - HoraInicioDada
+        ).
+    
+numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras):-
+    findall(Horas, (
+        horario(ID, DiaSemana, HoraInicioEvento, HoraFimEvento, _, Periodo_aux),
+        testa_periodos(Periodo_aux,[Periodo]),
+        salas(TipoSala, Salas),
+        evento(ID, _, _, _, Sala),
+        member(Sala,Salas),
+        ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas)),
+        SomaHoras_aux),
+    sum_list(SomaHoras_aux, SomaHoras).
+
+ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max):-
+    Duracao is HoraFim - HoraInicio,
+    salas(TipoSala,Salas),
+    length(Salas,Len),
+    Max is  Len * Duracao.
+    
+percentagem(SomaHoras, Max, Percentagem):-
+    Percentagem is (SomaHoras / Max) * 100.
+
+    ocupacaoCritica(HoraInicio, HoraFim, Threshold, Resultados):-
+        findall(casosCriticos(DiaSemana,TipoSala,Percentagem), (
+            salas(TipoSala, _),
+            horario(_, DiaSemana, _, _,_, Periodo),
+            numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras),
+            ocupacaoMax(TipoSala, HoraInicio, HoraFim, MaxHoras),
+            percentagem(SomaHoras,MaxHoras,Percentagem_aux),
+            Percentagem_aux >Threshold,
+            ceiling(Percentagem_aux,Percentagem)
+            ),
+        Resultados_aux),
+        sort(Resultados_aux,Resultados).
