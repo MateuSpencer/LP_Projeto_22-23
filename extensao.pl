@@ -1,10 +1,10 @@
 % 100032 Mateus Spencer
 :- set_prolog_flag(answer_write_options,[max_depth(0)]). % para listas completas
-:- consult('dados.pl'), consult('keywords.pl'). % ficheiros a importar.
+:- [dados], [keywords].
 
 %Periodos pode ser ou um periodo normal ou um semestre
 %pelo menos um desses periodos num caso de um semestre tem de tar na lista de periodos permitidos
-testa_periodos(Periodos, List) :- 
+testa_periodos(Periodos, List):- 
     (   sub_atom(Periodos, _, _, _, '_') 
     ->
         (   sub_atom(Periodos, _, _, _, '1') 
@@ -19,7 +19,7 @@ testa_periodos(Periodos, List) :-
         member(Periodos, List)
     ).
 
-eventosSemSala(Eventos) :-
+eventosSemSala(Eventos):-
     findall(E,evento(E, _, _, _, semSala),Eventos1),
     sort(Eventos1,Eventos).
 
@@ -84,15 +84,11 @@ organizaDisciplinas([Disciplina|T], Curso, [Semestre1,Semestre2]):-
 confirma_curso_ano(ID, Curso, Ano):-
     turno(ID, Curso,Ano,_),!.
 horasCurso(Periodo, Curso, Ano, TotalHoras):-
-        findall(Dur ,(horario(ID, _, _, _, Dur, Periodo_aux),testa_periodos(Periodo_aux, [Periodo]), confirma_curso_ano(ID, Curso, Ano)), Duracoes),
-        sum_list(Duracoes, TotalHoras).
+    findall(Dur ,(horario(ID, _, _, _, Dur, Periodo_aux),testa_periodos(Periodo_aux, [Periodo]), confirma_curso_ano(ID, Curso, Ano)), Duracoes),
+    sum_list(Duracoes, TotalHoras).
 
-    evolucaoHorasCurso(Curso, Evolucao):-
-        findall((Ano,Periodo,TotalHoras), (
-            turno(_, Curso, Ano, _),
-            fixa_periodo(Periodo),
-            horasCurso(Periodo, Curso, Ano, TotalHoras)), 
-        Evolucao_aux),
+evolucaoHorasCurso(Curso, Evolucao):-
+    findall((Ano,Periodo,TotalHoras),(member(Ano,[1,2,3]),member(Periodo,[p1,p2,p3,p4]), horasCurso(Periodo, Curso, Ano, TotalHoras)), Evolucao_aux),
     sort(Evolucao_aux,Evolucao).
 
 ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, _):-
