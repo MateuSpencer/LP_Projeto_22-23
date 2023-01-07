@@ -136,15 +136,63 @@ ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max):-
 percentagem(SomaHoras, Max, Percentagem):-
     Percentagem is (SomaHoras / Max) * 100.
 
-    ocupacaoCritica(HoraInicio, HoraFim, Threshold, Resultados):-
-        findall(casosCriticos(DiaSemana,TipoSala,Percentagem), (
-            salas(TipoSala, _),
-            horario(_, DiaSemana, _, _,_, Periodo),
-            numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras),
-            ocupacaoMax(TipoSala, HoraInicio, HoraFim, MaxHoras),
-            percentagem(SomaHoras,MaxHoras,Percentagem_aux),
-            Percentagem_aux >Threshold,
-            ceiling(Percentagem_aux,Percentagem)
-            ),
-        Resultados_aux),
-        sort(Resultados_aux,Resultados).
+ocupacaoCritica(HoraInicio, HoraFim, Threshold, Resultados):-
+    findall(casosCriticos(DiaSemana,TipoSala,Percentagem), (
+        salas(TipoSala, _),
+        horario(_, DiaSemana, _, _,_, Periodo),
+        numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras),
+        ocupacaoMax(TipoSala, HoraInicio, HoraFim, MaxHoras),
+        percentagem(SomaHoras,MaxHoras,Percentagem_aux),
+        Percentagem_aux >Threshold,
+        ceiling(Percentagem_aux,Percentagem)
+        ),
+    Resultados_aux),
+    sort(Resultados_aux,Resultados).
+
+
+ocupacaoMesa(ListaPessoas, ListaRestricoes, OcupacaoMesa) :-
+    permutation(ListaPessoas, Permutacao),
+    verificaRestricoes(ListaRestricoes, Permutacao),
+    divideMesa(Permutacao, OcupacaoMesa),
+    !.
+
+divideMesa([X1, X2, X3, X4, X5, X6, X7, X8], [[X1, X2, X3], [X4, X5], [X6, X7, X8]]).
+
+verificaRestricoes([], _).
+verificaRestricoes([Restricao|Restricoes], OcupacaoMesa) :-
+    satisfazRestricao(Restricao, OcupacaoMesa),
+    !,
+    verificaRestricoes(Restricoes, OcupacaoMesa).
+
+satisfazRestricao(cab1(NomePessoa), [_, _, _, NomePessoa, _, _, _, _]).
+satisfazRestricao(cab2(NomePessoa), [_, _, _, _, NomePessoa, _, _, _]).
+
+satisfazRestricao(honra(NomePessoa1, NomePessoa2), [_, _, _, NomePessoa1, _, NomePessoa2, _, _]).
+satisfazRestricao(honra(NomePessoa1, NomePessoa2), [_, _, NomePessoa2, _, NomePessoa1, _, _, _]).
+
+satisfazRestricao(lado(NomePessoa1, _),[_, _, _, NomePessoa1, _, _, _, _]):- !, fail.
+satisfazRestricao(lado(_, NomePessoa2),[_, _, _, NomePessoa2, _, _, _, _]):- !, fail.
+satisfazRestricao(lado(NomePessoa1, _),[_, _, _, _, NomePessoa1, _, _, _]):- !, fail.
+satisfazRestricao(lado(_, NomePessoa2),[_, _, _, _, NomePessoa2, _, _, _]):- !, fail.
+satisfazRestricao(lado(NomePessoa1, NomePessoa2), [H|[H1|R]]):-
+    (
+        NomePessoa1 = H, NomePessoa2 = H1;
+        NomePessoa2 = H, NomePessoa1 = H1
+    );
+    satisfazRestricao(lado(NomePessoa1, NomePessoa2), [H1|R]).
+satisfazRestricao(naoLado(NomePessoa1, NomePessoa2), OcupacaoMesa):-
+    \+(satisfazRestricao(lado(NomePessoa1, NomePessoa2), OcupacaoMesa)).
+
+satisfazRestricao(frente(NomePessoa1, _),[_, _, _, NomePessoa1, _, _, _, _]):- !, fail.
+satisfazRestricao(frente(_, NomePessoa2),[_, _, _, NomePessoa2, _, _, _, _]):- !, fail.
+satisfazRestricao(frente(NomePessoa1, _),[_, _, _, _, NomePessoa1, _, _, _]):- !, fail.
+satisfazRestricao(frente(_, NomePessoa2),[_, _, _, _, NomePessoa2, _, _, _]):- !, fail.
+satisfazRestricao(frente(NomePessoa1, NomePessoa2), OcupacaoMesa):-
+    nth0(Index, OcupacaoMesa, NomePessoa1),
+    (   Index < 3
+        ->Index2 is Index + 5
+        ; Index2 is Index - 5
+    ),
+    nth0(Index2, OcupacaoMesa, NomePessoa2).
+satisfazRestricao(naoFrente(NomePessoa1, NomePessoa2), OcupacaoMesa):-
+    \+(satisfazRestricao(frente(NomePessoa1, NomePessoa2), OcupacaoMesa)).
