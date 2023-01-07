@@ -58,10 +58,31 @@ procuraDisciplinas(Curso, ListaDisciplinas):-
     findall(D,(evento(ID, D, _, _, _), turno(ID, Curso, _, _)), Disciplinas1),
     sort(Disciplinas1, ListaDisciplinas).
 
-%organizaDisciplinas/3
+organizaDisciplinas([], _,[[],[]]).
+
+organizaDisciplinas([Disciplina|T], Curso, [Semestre1,Semestre2]):-
+    evento(ID, Disciplina, _, _, _), 
+    turno(ID, Curso, _, _),
+    !,
+    organizaDisciplinas(T, Curso, [Semestre1_Rec,Semestre2_Rec]),
+    horario(ID, _, _, _, _, Periodo),
+    (testa_periodos(Periodo, [p1,p2]) 
+    -> 
+        (
+        append([Disciplina], Semestre1_Rec, Semestre1_Aux),
+        sort(Semestre1_Aux, Semestre1),
+        Semestre2 = Semestre2_Rec
+        )
+    ;
+        (
+        append([Disciplina], Semestre2_Rec, Semestre2_Aux),
+        sort(Semestre2_Aux, Semestre2),
+        Semestre1 = Semestre1_Rec
+        )
+    ).
 %horasCurso/5
 %evolucaoHorasCurso/2
 
-%(...)
+%5(...)
 
 %Mesa de Jantar
