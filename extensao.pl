@@ -19,10 +19,9 @@ testa_periodos(Periodos, List):-
         member(Periodos, List)
     ).
 
-eventosSemSala(Eventos):-
+eventosSemSalas(Eventos):-
     findall(E,evento(E, _, _, _, semSala),Eventos1),
     sort(Eventos1,Eventos).
-
 
 eventosSemSalasDiaSemana(Dia, Eventos):-
     findall(E,(evento(E, _, _, _, semSala), horario(E, Dia, _, _, _, _)),Eventos1),
