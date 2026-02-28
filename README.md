@@ -1,7 +1,24 @@
-# LP_Projeto
+# Logic for Programming — Event Scheduler
 
-This project was made during the Logic for Programming course in Instituto Superior Técnico in the academic year 2022/2023.
+**Course:** Logic for Programming (LP) — IST, University of Lisbon
+**Year:** 2022/2023
 
-This is a Prolog-based application designed for managing and organizing events in an educational setting. It provides functionalities for scheduling events, assigning rooms, and managing different types of rooms and courses.
+## Description
 
-The Assignemnt can be read in portuguese in the Enunciado pdf file.
+A **Prolog-based scheduling system** for managing events in an educational setting. Provides constraint-based scheduling for events, room assignments, and course management using logic programming.
+
+## Technologies
+
+- **Language:** Prolog
+
+## Project Structure
+
+```
+keywords.pl    # Keyword definitions and predicates
+dados.pl       # Data/facts base (rooms, courses, events)
+extensao.pl    # Extension predicates and solver logic
+```
+
+## Assignment
+
+See `Enunciado_Projeto_LP_2022.pdf` for the full specification (in Portuguese).
